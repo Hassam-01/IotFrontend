@@ -28,7 +28,7 @@ const LoginRegisterPage = () => {
   const navigate = useNavigate();
 
   const handleFormSubmit = async (e) => {
-    const DEV = "dev"
+    const DEV = "prod"
     let baseURL;
     DEV === "dev" ? 
        baseURL = "http://localhost:3010/api": 
@@ -54,6 +54,11 @@ const LoginRegisterPage = () => {
           dispatch(setUserID({userID, userName}));
         toast.success(isLogin ? 'Login successful!' : 'Registration successful!');
 
+        // hit the api baseUrl/setDefault with the userID as post
+        if (!isLogin) {
+          const response2 = await axios.post(`${baseURL}/setDefault`, {userID: response.data.userID})
+          console.log(response2.data)
+        }
         // Redirect to home page after successful login/registration
         navigate('/home');
       } else {

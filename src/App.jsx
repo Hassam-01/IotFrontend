@@ -8,21 +8,6 @@ import Home from "./pages/Home";
 
 
 function App() {
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       // console.log(process.env.REACT_APP_BACKEND, "/test")
-  //       const response = await axios.get(
-  //         `https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api/test`
-  //       );
-  //       console.log(response.data);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
   return (
     <>
       <Routes>
