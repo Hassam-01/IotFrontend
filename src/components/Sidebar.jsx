@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'; // Import Link for navigation
 import { FaWater, FaFireAlt, FaBolt, FaSignOutAlt } from 'react-icons/fa'; // Icons for each sensor
+import { useSelector } from 'react-redux';
 
 function Sidebar() {
+
+    const userName = useSelector(state => state.userID.userName)
   return (
     <div className="w-64 bg-gray-800 h-screen text-white flex flex-col">
       {/* Sidebar Header */}
@@ -17,7 +20,7 @@ function Sidebar() {
           className="w-16 h-16 rounded-full border-2 border-white"
         />
         <div className="flex flex-col items-center">
-          <h3 className="text-lg font-semibold">John Doe</h3>
+          <h3 className="text-lg font-semibold">{userName}</h3>
           <p className="text-sm text-gray-400">Admin</p>
         </div>
       </div>
