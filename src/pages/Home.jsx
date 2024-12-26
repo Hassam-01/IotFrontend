@@ -1,329 +1,323 @@
 import {
-  FaWater,
-  FaFireAlt,
-  FaBolt,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaTimesCircle,
-} from "react-icons/fa";
-import Sidebar from "../components/Sidebar";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import axios from "axios";
-
-
-function MainPage() {
-const [waterData, setWaterData] = useState(); // Example pressure data for water sensor
-const [gasData, setGasData] = useState(); // Example pressure data for gas sensor
-const [electricityData, setElectricityData] = useState(); // Example voltage data for electricity sensor
-
-const [waterStatus, setWaterStatus] = useState("ok"); // Example status for water sensor
-const [gasStatus, setGasStatus] = useState("warning"); // Example status for gas sensor
-const [electricityStatus, setElectricityStatus] = useState("danger"); // Example status for electricity sensor
-
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedSensor, setSelectedSensor] = useState(null);
-  const [password, setPassword] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [value, setValue] = useState("");
-  const [optimalValue, setOptimalValue] = useState("");
-  const [status, setStatus] = useState("");
-  const [state, setState] = useState("");
-  const [sensorToken, setSensorToken] = useState("");
-
-  const DEV = "prod";
-  const baseURL =
-    DEV === "dev"
-      ? "http://localhost:3010/api"
-      : "https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api";
-
-  const userID = useSelector((state) => state.userID.userID);
-// get the waterdata, gasdata, electricitydata, waterStatus, gasStatus, electricStatus from the api/displayData/:userID
-  useEffect(() => {
-    const fetchData = async () => {
+    FaWater,
+    FaFireAlt,
+    FaBolt,
+    FaCheckCircle,
+    FaExclamationTriangle,
+    FaTimesCircle,
+  } from "react-icons/fa";
+  import Sidebar from "../components/Sidebar";
+  import { useEffect, useState } from "react";
+  import { useSelector } from "react-redux";
+  import axios from "axios";
+  import SensorCard from "../components/SensorCard";
+  
+  function MainPage() {
+    const [waterData, setWaterData] = useState();
+    const [gasData, setGasData] = useState();
+    const [electricityData, setElectricityData] = useState();
+  
+    const [waterStatus, setWaterStatus] = useState("ok");
+    const [gasStatus, setGasStatus] = useState("moderate");
+    const [electricityStatus, setElectricityStatus] = useState("risk");
+  
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [selectedSensor, setSelectedSensor] = useState(null);
+    const [password, setPassword] = useState("");
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [value, setValue] = useState("");
+    const [status, setStatus] = useState("");
+    const [state, setState] = useState("");
+    const [sensorToken, setSensorToken] = useState("");
+    const [optimalValue, setOptimalValue] = useState("");
+  
+    const DEV = "prod";
+    const baseURL =
+      DEV === "dev"
+        ? "http://localhost:3010/api"
+        : "https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api";
+  
+    const userID = useSelector((state) => state.userID.userID);
+  
+    // Fetch data for sensors
+    useEffect(() => {
+      const fetchData = async () => {
         try {
-            const response = await axios.get(`${baseURL}/displayData/${userID}`);
-            // map the response.data.sensors to the respective states
-            response.data.sensors.map((sensor) => {
-                if (sensor.sensor_type === "water") {
-                    setWaterData(sensor.pressure_value);
-                    setWaterStatus(sensor.status);
-                }
-                else if (sensor.sensor_type === "gas") {
-                    setGasData(sensor.pressure_value);
-                    setGasStatus(sensor.status);
-                }
-                else if (sensor.sensor_type === "electricity") {
-                    setElectricityData(sensor.pressure_value);
-                    setElectricityStatus(sensor.status);
-                }
-            });
+          const response = await axios.get(`${baseURL}/displayData/${userID}`);
+          response.data.sensors.forEach((sensor) => {
+            if (sensor.sensor_type.toLowerCase() === "water") {
+              setWaterData(sensor.pressure_value);
+              setWaterStatus(sensor.state.toLowerCase());
+            } else if (sensor.sensor_type.toLowerCase() === "gas") {
+              setGasData(sensor.pressure_value);
+              setGasStatus(sensor.state.toLowerCase());
+            } else if (sensor.sensor_type.toLowerCase() === "electricity") {
+              setElectricityData(sensor.pressure_value);
+              setElectricityStatus(sensor.state.toLowerCase());
+            }
+          });
+        } catch (err) {
+          console.error(err);
         }
-        catch(err) {
-            console.error(err);
-        }
+      };
+      fetchData();
+    }, [userID]);
+  
+    const handleCardClick = (type) => {
+      setSelectedSensor(type);
+      setIsPopupOpen(true);
+      setIsAuthorized(false);
+      setPassword("");
     };
-    fetchData();
-});
-
-  // Function to get the status icon based on the status
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "warning":
-        return <FaExclamationTriangle className="text-yellow-500" />;
-      case "danger":
-        return <FaTimesCircle className="text-red-500" />;
-      case "ok":
-      default:
-        return <FaCheckCircle className="text-green-500" />;
-    }
-  };
-
-  // Handle sensor card click
-  const handleCardClick = (type) => {
-    setSelectedSensor(type);
-    setIsPopupOpen(true);
-    setIsAuthorized(false);
-    setPassword("");
-  };
-  // Handle password submission
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    const response = await axios.post(`${baseURL}/login/${selectedSensor}`, {
-      password,
-      userID,
-    });
-    const token = response.data.token;
-    setSensorToken(token);
-
-    if (response.status === 200) {
-      setIsAuthorized(true);
-
-      // Fetch sensor information
-      const sensorInfoResponse = await axios.post(
-        `${baseURL}/getinfo/${selectedSensor}`,
-        { userID },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the token here
-          },
+  
+    const closePopup = () => {
+      setIsPopupOpen(false);
+      setSelectedSensor(null);
+      setPassword("");
+      setIsAuthorized(false);
+    };
+  
+    const getStatusIcon = (status) => {
+      switch (status) {
+        case "warning":
+          return <FaExclamationTriangle className="text-yellow-500" />;
+        case "danger":
+          return <FaTimesCircle className="text-red-500" />;
+        case "ok":
+        default:
+          return <FaCheckCircle className="text-green-500" />;
+      }
+    };
+  
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        try {
+          const response = await axios.post(
+            `${baseURL}/login/${selectedSensor}`,
+            { password, userID }
+          );
+          
+          if (response.status === 200) {
+            const token = response.data.token;
+            setSensorToken(token);
+            setIsAuthorized(true);
+      
+            // Fetch sensor information
+            const sensorInfoResponse = await axios.post(
+              `${baseURL}/getinfo/${selectedSensor}`,
+              { userID },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (sensorInfoResponse.status === 200) {
+              setValue(sensorInfoResponse.data.sensor.pressure_value);
+              setState(sensorInfoResponse.data.sensor.status);
+              setStatus(sensorInfoResponse.data.sensor.state);
+              setOptimalValue(sensorInfoResponse.data.sensor.optimal_value);
+            } else {
+              alert("Failed to fetch sensor information");
+            }
+          }
+        } catch (err) {
+             if (err.status === 400) {
+                alert("Invalid credentials");
+              } else {
+                alert("Unexpected response status: " + err.status);
+              }
         }
-      );
-      if (sensorInfoResponse.status === 200) {
-        setValue(sensorInfoResponse.data.sensor.pressure_value);
-        setState(sensorInfoResponse.data.sensor.status);
-        setStatus(sensorInfoResponse.data.sensor.state);
-        setOptimalValue(sensorInfoResponse.data.sensor.optimal_value);
-      } else {
-        alert("Failed to fetch sensor information");
-      }
-    } else {
-      alert("Incorrect password");
-    }
-  };
-
-  // Close the popup
-  const closePopup = () => {
-    setIsPopupOpen(false);
-    setSelectedSensor(null);
-    setPassword("");
-    setIsAuthorized(false);
-  };
-  // hit api/shutdown/:type for shutdown pass token userID
-  const shutdownSensor = async () => {
-    // Fetch sensor information
-    const sensorInfoResponse = await axios.post(
-      `${baseURL}/shutdown/${selectedSensor}`,
-      { userID },
-      {
-        headers: {
-          Authorization: `Bearer ${sensorToken}`, // Include the token here
-        },
-      }
-    );
-    if (sensorInfoResponse.status === 200) {
-      if (state === "shutdown") {
-        setValue(sensorInfoResponse.data.sensor.pressure_value);
-        setState(sensorInfoResponse.data.sensor.status);
-        setStatus(sensorInfoResponse.data.sensor.state);
-      } else {
-        setValue(0);
-        setState("shutdown");
-        setStatus("");
-      }
-    } else {
-      alert("Failed to fetch sensor information");
-    }
-  };
-
-  const changePassword = async () => {
-    const newPassword = prompt("Enter new password");
-    const sensorInfoResponse = await axios.post(
-      `${baseURL}/changePassword/${selectedSensor}`,
-      { userID, newPassword },
-      {
-        headers: {
-          Authorization: `Bearer ${sensorToken}`, // Include the token here
-        },
-      }
-    );
-    if (sensorInfoResponse.status === 200) {
-      alert("Password changed successfully");
-    } else {
-      alert("Failed to change password");
-    }
-  };
-  // change value hit api/changevalue/:type pass token userID
-    const changeValue = async () => {
-        const newValue = prompt("Enter new value");
-        const sensorInfoResponse = await axios.post(
-        `${baseURL}/changeValue/${selectedSensor}`,
-        { userID, newValue },
-        {
+      };
+      
+  
+    // Shutdown sensor
+    const shutdownSensor = async () => {
+      try {
+        const response = await axios.post(
+          `${baseURL}/shutdown/${selectedSensor}`,
+          { userID },
+          {
             headers: {
-            Authorization: `Bearer ${sensorToken}`, // Include the token here
+              Authorization: `Bearer ${sensorToken}`,
             },
-        }
+          }
         );
-        if (sensorInfoResponse.status === 200) {
-        setOptimalValue(newValue);
+        if (response.status === 200) {
+          if (state === "shutdown") {
+            setValue(response.data.sensor.pressure_value);
+            setState(response.data.sensor.status);
+            setStatus(response.data.sensor.state);
+          } else {
+            setValue(0);
+            setState("shutdown");
+            setStatus("");
+          }
         } else {
-        alert("Failed to change value");
+          alert("Failed to change sensor state");
         }
+      } catch (err) {
+        console.error("Error in shutdown sensor:", err);
+      }
     };
-  return (
-    <div className="bg-gray-900 min-h-screen flex">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main content section */}
-      <div className="flex-1 p-8">
-        <h1 className="text-4xl font-extrabold text-center text-white mb-12">
-          IoT Management Dashboard
-        </h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {/* Water Sensor */}
-          <div
-            className="bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center cursor-pointer"
-            onClick={() => handleCardClick("water")}
-          >
-            <FaWater size={50} className="text-blue-400 mb-4" />
-            <h2 className="text-xl font-semibold text-white">Water Sensor</h2>
-            <p className="mt-2 text-white">
-              Pressure: {waterData ? `${waterData} PSI` : "Loading..."}
-            </p>
-            <p className="mt-4 flex gap-2 items-center text-white">
-              Status: {getStatusIcon(waterStatus)}
-            </p>
-          </div>
-
-          {/* Gas Sensor */}
-          <div
-            className="bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center cursor-pointer"
-            onClick={() => handleCardClick("gas")}
-          >
-            <FaFireAlt size={50} className="text-red-400 mb-4" />
-            <h2 className="text-xl font-semibold text-white">Gas Sensor</h2>
-            <p className="mt-2 text-white">
-              Pressure: {gasData ? `${gasData} PSI` : "Loading..."}
-            </p>
-            <p className="mt-4 flex gap-2 items-center text-white">
-              Status: {getStatusIcon(gasStatus)}
-            </p>
-          </div>
-
-          {/* Electricity Sensor */}
-          <div
-            className="bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center cursor-pointer"
-            onClick={() => handleCardClick("electricity")}
-          >
-            <FaBolt size={50} className="text-yellow-400 mb-4" />
-            <h2 className="text-xl font-semibold text-white">
-              Electricity Sensor
-            </h2>
-            <p className="mt-2 text-white">
-              Voltage: {electricityData ? `${electricityData} V` : "Loading..."}
-            </p>
-            <p className="mt-4 flex gap-2 items-center text-white">
-              Status: {getStatusIcon(electricityStatus)}
-            </p>
+  
+    // Change password
+    const changePassword = async () => {
+      const newPassword = prompt("Enter new password");
+      try {
+        const response = await axios.post(
+          `${baseURL}/changePassword/${selectedSensor}`,
+          { userID, newPassword },
+          {
+            headers: {
+              Authorization: `Bearer ${sensorToken}`,
+            },
+          }
+        );
+        if (response.status === 200) {
+          alert("Password changed successfully");
+        } else {
+          alert("Failed to change password");
+        }
+      } catch (err) {
+        console.error("Error in password change:", err);
+      }
+    };
+  
+    // Change value
+    const changeValue = async () => {
+      const newValue = prompt("Enter new value");
+      try {
+        const response = await axios.post(
+          `${baseURL}/changeValue/${selectedSensor}`,
+          { userID, newValue },
+          {
+            headers: {
+              Authorization: `Bearer ${sensorToken}`,
+            },
+          }
+        );
+        if (response.status === 200) {
+          setOptimalValue(newValue);
+        } else {
+          alert("Failed to change value");
+        }
+      } catch (err) {
+        console.error("Error in changing value:", err);
+      }
+    };
+  
+    return (
+      <div className="bg-gray-900 min-h-screen flex flex-col sm:flex-row">
+        <Sidebar />
+        <div className="flex-1 p-4 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-6 sm:mb-12">
+            IoT Management Dashboard
+          </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <SensorCard
+              icon={<FaWater />}
+              label="Water Sensor"
+              data={waterData}
+              unit="PSI"
+              state={waterStatus}
+              onClick={() => handleCardClick("water")}
+            />
+            <SensorCard
+              icon={<FaFireAlt />}
+              label="Gas Sensor"
+              data={gasData}
+              unit="PSI"
+              state={gasStatus}
+              onClick={() => handleCardClick("gas")}
+            />
+            <SensorCard
+              icon={<FaBolt />}
+              label="Electricity Sensor"
+              data={electricityData}
+              unit="V"
+              state={electricityStatus}
+              onClick={() => handleCardClick("electricity")}
+            />
           </div>
         </div>
-      </div>
-
-      {/* Popup */}
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            {isAuthorized ? (
-              <div>
-                <h2 className="text-2xl font-semibold mb-4">
-                  Sensor Information
-                  <span className="ml-12 text-sm text-gray-700">
-                    Status: {status}
-                  </span>
+  
+        {/* Popup Modal */}
+        {isPopupOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-11/12 sm:w-1/2 lg:w-1/3">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
+                  {selectedSensor.toUpperCase()} Module Details
                 </h2>
-                <div className="mb-4">
-                  <p className="text-gray-700">
-                    <strong>Type:</strong> {selectedSensor}
-                  </p>
-                  {/* Replace with actual data */}
-                  <p className="text-gray-700 gap-2">
-                    <strong>Value:</strong> {value} <strong>Optimal: {optimalValue}</strong> 
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>State:</strong> {state}
-                  </p>
-                </div>
                 <button
-                  className={`w-full ${
-                    state !== "shutdown" ? "bg-red-500" : "bg-green-600"
-                  } text-white py-2 rounded mb-2`}
-                  onClick={shutdownSensor}
+                  onClick={closePopup}
+                  className="text-gray-600 hover:text-gray-900"
                 >
-                  {state === "shutdown" ? "Turn On" : "Shutdown"}
-                </button>
-                <button
-                  className="w-full bg-yellow-500 text-white py-2 rounded mb-2"
-                  onClick={changePassword}
-                >
-                  Change Password
-                </button>
-                <button className="w-full bg-green-500 text-white py-2 rounded" onClick={changeValue}>
-                  Change Value
+                  ✖
                 </button>
               </div>
-            ) : (
-              <form onSubmit={handlePasswordSubmit}>
-                <h2 className="text-2xl font-semibold mb-4">Enter Password</h2>
-                <input
-                  type="password"
-                  className="w-full p-2 border rounded mb-4"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white py-2 rounded"
+              {!isAuthorized ? (
+                <form
+                  onSubmit={handlePasswordSubmit}
+                  className="flex flex-col"
                 >
-                  Submit
-                </button>
-              </form>
-            )}
+                  <label className="text-gray-700 mb-2">Enter Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="p-2 border rounded mb-4"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+                  >
+                    Submit
+                  </button>
+                </form>
+              ) : (
+                <div>
+                  <p>
+                    <strong>Pressure Value:</strong> {value} {selectedSensor}
+                  </p>
+                  <p>
+                    <strong>Status:</strong> {state}
+                  </p>
+                  <p className="flex gap-2 items-center"> 
+                    <strong>State:</strong> {status} {getStatusIcon(state)}
+                  </p>
+                  <p>
+                    <strong>Optimal Value:</strong> {optimalValue}
+                    </p>
 
-            <button
-              className="mt-4 w-full bg-gray-500 text-white py-2 rounded"
-              onClick={closePopup}
-            >
-              Close
-            </button>
+                  <button
+                    onClick={shutdownSensor}
+                    className={`${state === "shutdown"? "bg-green-600":"bg-red-500"}  text-white p-2 rounded mt-4`}
+                  >
+                    {state ==="shutdown" ? "Turn On" :"Shutdown Sensor"}
+                  </button>
+                  <button
+                    onClick={changePassword}
+                    className="bg-yellow-500 text-white p-2 rounded mt-4 ml-4"
+                  >
+                    Change Password
+                  </button>
+                  <button
+                    onClick={changeValue}
+                    className="bg-green-500 text-white p-2 rounded mt-4 ml-4"
+                  >
+                    Change Value
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+      </div>
+    );
+  }
+  
+  export default MainPage;
 
-export default MainPage;
+  

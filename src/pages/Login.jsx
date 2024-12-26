@@ -5,14 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { setUserID } from '../features/userID/userIDSlice';
-import { FaChessKing } from 'react-icons/fa';
 
 const LoginRegisterPage = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-
-
     username: '',
     password: '',
     email: '',
@@ -29,52 +26,44 @@ const LoginRegisterPage = () => {
   const navigate = useNavigate();
 
   const handleFormSubmit = async (e) => {
-
-    
     e.preventDefault();
-    const DEV = "prod"
-    let baseURL;
-    DEV === "dev" ? 
-       baseURL = "http://localhost:3010/api": 
-        baseURL = "https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api"
-    
-        
+    const DEV = "prod";
+    const baseURL = DEV === "dev"
+      ? "http://localhost:3010/api"
+      : "https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api";
+
     const url = isLogin
       ? `${baseURL}/login`
       : `${baseURL}/register`;
     try {
-        const response = await axios.post(url, formData);
-        console.log(response.data)
-        if (response.data.staus === 200) {
-
-          // Show success message
-          const { userID, userName } = response.data;
-          dispatch(setUserID({userID, userName}));
+      const response = await axios.post(url, formData);
+      if (response.data.status === 200) {
+        const { userID, userName } = response.data;
+        dispatch(setUserID({ userID, userName }));
         toast.success(isLogin ? 'Login successful!' : 'Registration successful!');
 
-        // hit the api baseUrl/setDefault with the userID as post
         if (!isLogin) {
-          const response2 = await axios.post(`${baseURL}/setDefault`, {userID: response.data.userID})
-          console.log(response2.data)
+          await axios.post(`${baseURL}/setDefault`, { userID: response.data.userID });
         }
-        // Redirect to home page after successful login/registration
         navigate('/home');
       } else {
-        // Show error message
         toast.error(isLogin ? 'Incorrect username or password' : 'User already exists');
       }
     } catch (error) {
-      toast.error(error, 'An error occurred, please try again');
+      toast.error(isLogin ? 'Incorrect username or password' : 'User already exists');
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-500 to-indigo-600">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-        <h2 className="text-3xl font-semibold text-center mb-6 text-blue-600">{isLogin ? 'Login' : 'Register'}</h2>
-        <form onSubmit={handleFormSubmit}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+    <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 px-4">
+      <h1 className="text-4xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400 text-center">
+        IoT Device Management System
+      </h1>
+      <div className="w-full max-w-sm bg-gray-800 p-6 rounded-lg shadow-2xl transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
+        <h2 className="text-2xl font-bold text-center mb-6 text-blue-400">{isLogin ? 'Login' : 'Register'}</h2>
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-300">
               Username
             </label>
             <input
@@ -83,13 +72,13 @@ const LoginRegisterPage = () => {
               name="username"
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out transform hover:ring-blue-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-sm"
               required
             />
           </div>
           {!isLogin && (
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email
               </label>
               <input
@@ -98,13 +87,13 @@ const LoginRegisterPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out transform hover:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-sm"
                 required
               />
             </div>
           )}
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
               Password
             </label>
             <input
@@ -113,13 +102,13 @@ const LoginRegisterPage = () => {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out transform hover:ring-blue-500"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-sm"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out transform hover:bg-blue-600"
+            className="w-full py-2 bg-gradient-to-r from-blue-500 to-teal-400 text-white font-bold rounded-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-gray-800 shadow-lg hover:shadow-teal-400 transition-all"
           >
             {isLogin ? 'Login' : 'Register'}
           </button>
@@ -127,13 +116,13 @@ const LoginRegisterPage = () => {
         <div className="mt-4 text-center">
           <button
             onClick={() => setIsLogin((prev) => !prev)}
-            className="text-sm text-blue-500 hover:text-blue-700 transition-all duration-300 ease-in-out transform hover:underline"
+            className="text-sm font-medium text-blue-400 hover:text-teal-400 transition-all hover:underline"
           >
             {isLogin ? 'Create an account' : 'Already have an account? Login'}
           </button>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer theme="dark" position="bottom-right" autoClose={3000} />
     </div>
   );
 };
