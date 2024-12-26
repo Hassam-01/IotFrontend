@@ -44,7 +44,7 @@ const LoginRegisterPage = () => {
       : `${baseURL}/register`;
     try {
         const response = await axios.post(url, formData);
-
+        console.log(response.data)
         if (response.data.staus === 200) {
 
           // Show success message
