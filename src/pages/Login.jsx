@@ -45,10 +45,8 @@ const LoginRegisterPage = () => {
     try {
         const response = await axios.post(url, formData);
 
-        if (response.data) {
-          // Store the JWT token in localStorage after successful login/registration
-          // localStorage.setItem('jwt_token', response.data.token);
-          
+        if (response.data.staus === 200) {
+
           // Show success message
           const { userID, userName } = response.data;
           dispatch(setUserID({userID, userName}));
