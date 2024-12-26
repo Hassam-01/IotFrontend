@@ -32,7 +32,6 @@ const LoginRegisterPage = () => {
 
     
     e.preventDefault();
-    console.log("900")
     const DEV = "prod"
     let baseURL;
     DEV === "dev" ? 
@@ -40,17 +39,12 @@ const LoginRegisterPage = () => {
         baseURL = "https://backend-git-main-hassam-alis-projects-909d02f3.vercel.app/api"
     
         
-        console.log("0000")
     const url = isLogin
       ? `${baseURL}/login`
       : `${baseURL}/register`;
-    console.log("1")
     try {
         const response = await axios.post(url, formData);
-        // console.log("2")
-        console.log(response.data)
-        console.log(response.data.userID)
-        console.log(response.data.userName)
+
         if (response.data) {
           // Store the JWT token in localStorage after successful login/registration
           // localStorage.setItem('jwt_token', response.data.token);

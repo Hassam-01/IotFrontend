@@ -10,8 +10,9 @@ import Sidebar from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+
+
 function MainPage() {
-  // Example data for each sensor
 const [waterData, setWaterData] = useState(); // Example pressure data for water sensor
 const [gasData, setGasData] = useState(); // Example pressure data for gas sensor
 const [electricityData, setElectricityData] = useState(); // Example voltage data for electricity sensor
@@ -25,6 +26,7 @@ const [electricityStatus, setElectricityStatus] = useState("danger"); // Example
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [value, setValue] = useState("");
+  const [optimalValue, setOptimalValue] = useState("");
   const [status, setStatus] = useState("");
   const [state, setState] = useState("");
   const [sensorToken, setSensorToken] = useState("");
@@ -111,6 +113,7 @@ const [electricityStatus, setElectricityStatus] = useState("danger"); // Example
         setValue(sensorInfoResponse.data.sensor.pressure_value);
         setState(sensorInfoResponse.data.sensor.status);
         setStatus(sensorInfoResponse.data.sensor.state);
+        setOptimalValue(sensorInfoResponse.data.sensor.optimal_value);
       } else {
         alert("Failed to fetch sensor information");
       }
@@ -170,7 +173,24 @@ const [electricityStatus, setElectricityStatus] = useState("danger"); // Example
       alert("Failed to change password");
     }
   };
-
+  // change value hit api/changevalue/:type pass token userID
+    const changeValue = async () => {
+        const newValue = prompt("Enter new value");
+        const sensorInfoResponse = await axios.post(
+        `${baseURL}/changeValue/${selectedSensor}`,
+        { userID, newValue },
+        {
+            headers: {
+            Authorization: `Bearer ${sensorToken}`, // Include the token here
+            },
+        }
+        );
+        if (sensorInfoResponse.status === 200) {
+        setOptimalValue(newValue);
+        } else {
+        alert("Failed to change value");
+        }
+    };
   return (
     <div className="bg-gray-900 min-h-screen flex">
       {/* Sidebar */}
@@ -249,8 +269,8 @@ const [electricityStatus, setElectricityStatus] = useState("danger"); // Example
                     <strong>Type:</strong> {selectedSensor}
                   </p>
                   {/* Replace with actual data */}
-                  <p className="text-gray-700">
-                    <strong>Value:</strong> {value}
+                  <p className="text-gray-700 gap-2">
+                    <strong>Value:</strong> {value} <strong>Optimal: {optimalValue}</strong> 
                   </p>
                   <p className="text-gray-700">
                     <strong>State:</strong> {state}
@@ -270,7 +290,7 @@ const [electricityStatus, setElectricityStatus] = useState("danger"); // Example
                 >
                   Change Password
                 </button>
-                <button className="w-full bg-green-500 text-white py-2 rounded">
+                <button className="w-full bg-green-500 text-white py-2 rounded" onClick={changeValue}>
                   Change Value
                 </button>
               </div>
