@@ -186,7 +186,14 @@ import {
   
     // Change value
     const changeValue = async () => {
-      const newValue = prompt("Enter new value");
+    let newValue;
+    do {
+      newValue = prompt("Enter new value");
+      if (isNaN(newValue) || newValue > 250) {
+        alert("Please enter a valid number less than or equal to 250");
+      }
+    } while (isNaN(newValue) || newValue > 250);
+      
       try {
         const response = await axios.post(
           `${baseURL}/changeValue/${selectedSensor}`,
